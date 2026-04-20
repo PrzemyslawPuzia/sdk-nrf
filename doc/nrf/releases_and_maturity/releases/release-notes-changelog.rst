@@ -501,7 +501,9 @@ This section provides detailed lists of changes by :ref:`script <scripts>`.
 
   * Added licence handling of the LLVM toolchain libraries.
 
-|no_changes_yet_note|
+* :ref:`nrf_profiler_script` script:
+
+  * Corrected the ``ms_per_timestamp_tick`` parameter to match the nRF52 system clock.
 
 Integrations
 ============
