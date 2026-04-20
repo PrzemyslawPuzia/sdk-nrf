@@ -501,7 +501,11 @@ This section provides detailed lists of changes by :ref:`script <scripts>`.
 
   * Added licence handling of the LLVM toolchain libraries.
 
-|no_changes_yet_note|
+* :ref:`nrf_profiler_script` script:
+
+  * Updated:
+
+    * Fixed the ``ms_per_timestamp_tick`` parameter (defined in ``rtt_nordic_config.py``) to align with the system clock frequency of nRF52, nRF53, and nRF91 SoCs.
 
 Integrations
 ============
