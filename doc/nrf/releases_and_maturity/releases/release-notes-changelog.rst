@@ -483,7 +483,10 @@ nRF RPC libraries
 Other libraries
 ---------------
 
-|no_changes_yet_note|
+* :ref:`nrf_profiler` library:
+
+  * Add sending :kconfig:option:`CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC` through an RTT channel together with providing the system description.
+    This enables support for the nRF54L15 by providing accurate hardware clock information to the profiler host.
 
 Shell libraries
 ---------------
@@ -504,7 +507,9 @@ This section provides detailed lists of changes by :ref:`script <scripts>`.
 
   * Added licence handling of the LLVM toolchain libraries.
 
-|no_changes_yet_note|
+* :ref:`nrf_profiler_script` script:
+
+  * Update scripts to use hardware clock information from SoC and make accurate conversion (system tick to seconds).
 
 Integrations
 ============

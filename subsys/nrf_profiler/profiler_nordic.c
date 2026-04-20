@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <zephyr/kernel_structs.h>
+#include <zephyr/sys/time_units.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/kernel.h>
@@ -97,11 +98,17 @@ static void send_system_description(void)
 	/* Memory barrier to make sure that data is visible
 	 * before being accessed
 	 */
+	char sys_tick_buff[9];
+	int temp_val;
 	uint8_t ne = nrf_profiler_num_events;
 
 	__DMB();
-	char end_line = '\n';
+	static const char end_line = '\n';
 	int err = 0;
+
+	temp_val = snprintf(sys_tick_buff, sizeof(sys_tick_buff),
+						"%08X", sys_clock_hw_cycles_per_sec());
+	__ASSERT_NO_MSG(temp_val == sizeof(sys_tick_buff) - 1);
 
 	for (size_t t = 0; ((t < ne) && !err); t++) {
 		err = send_info_data(descr[t], strlen(descr[t]));
@@ -110,6 +117,12 @@ static void send_system_description(void)
 		}
 	}
 	if (!err) {
+		(void)send_info_data(&end_line, 1);
+	}
+
+	err = send_info_data(sys_tick_buff, strlen(sys_tick_buff));
+	if (!err) {
+		(void)send_info_data(&end_line, 1);
 		(void)send_info_data(&end_line, 1);
 	}
 }
