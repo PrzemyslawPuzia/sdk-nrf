@@ -63,6 +63,8 @@ class ModelCreator:
         self.bufs = list()
         self.bcnt = 0
 
+        self.sec_per_sys_tick = self.config['ms_per_timestamp_tick'] / 1000
+
         self.logger = logging.getLogger('model_creator')
         self.logger_console = logging.StreamHandler()
         self.logger.setLevel(log_lvl)
@@ -112,8 +114,36 @@ class ModelCreator:
     def _timestamp_from_ticks(self, clock_ticks):
         ts_ticks_aggregated = self.timestamp_overflows * self.config['timestamp_raw_max']
         ts_ticks_aggregated += clock_ticks
-        ts_s = ts_ticks_aggregated * self.config['ms_per_timestamp_tick'] / 1000
+        ts_s = ts_ticks_aggregated * self.sec_per_sys_tick
         return ts_s
+
+    def decode_by_markers(self, data, start_marker, stop_marker):
+        ev_start_idx = data.find(start_marker)
+        ev_stop_idx = data.find(stop_marker)
+        ret_tab = ""
+
+        if ev_start_idx != -1 and ev_stop_idx != -1:
+            start_pos = ev_start_idx + len(start_marker) + 1
+            ret_tab = data[start_pos:ev_stop_idx]
+        return ret_tab
+
+    def sys_config_decode_to_dict(self, data):
+        ret_dict = {}
+        items = data.strip().split('\n')
+        for item in items:
+            prarts = item.split(',')
+            if len(prarts) < 3:
+                continue
+            key, data_type, value = prarts[0], prarts[1], prarts[2]
+            if data_type != 's' and data_type != 't':
+                try:
+                    parsed_value = int(value)
+                except ValueError:
+                    continue
+            else:
+                parsed_value = value
+            ret_dict[key] = parsed_value
+        return ret_dict
 
     def transmit_all_events_descriptions(self):
         while True:
@@ -128,8 +158,23 @@ class ModelCreator:
                     continue
                 self.logger.error(f"Receiving error: {err}. Exiting")
                 sys.exit()
-        desc_buf = bytes.decode()
-        f = StringIO(desc_buf)
+
+        ev_start_tag = '<ev_info_start>'
+        ev_stop_tag = '<ev_info_stop>'
+        sys_cfg_start_tag = '<sys_config_start>'
+        sys_cfg_stop_tag = '<sys_config_stop>'
+        sys_tick_per_sec_name_param = 'sys_clock_hw_cycles_per_sec'
+
+        in_data = bytes.decode()
+        ev_info = self.decode_by_markers(in_data, ev_start_tag, ev_stop_tag)
+        sys_config = self.decode_by_markers(in_data, sys_cfg_start_tag, sys_cfg_stop_tag)
+        sys_dict = self.sys_config_decode_to_dict(sys_config)
+        sys_tick_per_sec = sys_dict.get(sys_tick_per_sec_name_param)
+
+        if sys_tick_per_sec is not None:
+            self.sec_per_sys_tick = 1 / sys_tick_per_sec
+
+        f = StringIO(ev_info)
         reader = csv.reader(f, delimiter=',')
         for row in reader:
             # Empty field is sent after last event description

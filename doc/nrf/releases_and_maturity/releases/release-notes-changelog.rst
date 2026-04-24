@@ -513,6 +513,8 @@ This section provides detailed lists of changes by :ref:`script <scripts>`.
 * :ref:`nrf_profiler_script` script:
 
   * Corrected the ``ms_per_timestamp_tick`` parameter to match the nRF52 system clock.
+  * Updated the scripts to use hardware clock information from SoC and to enable accurate conversion from system ticks to seconds.
+    Refactored the parser to support the new RTT communication layout, including the handling of ``<ev_info_...>`` and ``<sys_config_...>`` data markers.
 
 Integrations
 ============
