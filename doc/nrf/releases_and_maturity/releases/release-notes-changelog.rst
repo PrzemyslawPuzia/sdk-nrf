@@ -515,6 +515,8 @@ This section provides detailed lists of changes by :ref:`script <scripts>`.
   * Updated:
 
     * Fixed the ``ms_per_timestamp_tick`` parameter (defined in ``rtt_nordic_config.py``) to align with the system clock frequency of nRF52, nRF53, and nRF91 SoCs.
+    * Updated the scripts to use hardware clock information from SoC and to enable accurate conversion from hardware clock cycles to seconds.
+      Refactored the parser to support the new RTT communication layout, including the handling of ``<ev_info_...>`` and ``<sys_config_...>`` data markers.
 
 Integrations
 ============
